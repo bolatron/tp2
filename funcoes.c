@@ -82,7 +82,7 @@ void converteNum (FILE *saida, double v[], int TAM_BaseX, char **BaseX) {
         }
     }else{
         for(i=0; parte_inteira>=TAM_BaseX; i++, parte_inteira/=(int)TAM_BaseX){
-            str[i]=(int)BaseX[(parte_inteira%TAM_BaseX)];
+            str[i]=*(BaseX[(parte_inteira%TAM_BaseX)]);
         }
     }
     str[i]=parte_inteira+'0';
