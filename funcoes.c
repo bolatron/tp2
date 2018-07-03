@@ -13,7 +13,7 @@ int Procura_Num(int TAM_BaseX, char **BaseX, char c){
 }
 
 void trataNum (char str[], int a, int TAM_BaseX, char **BaseX) {
-    int i, j, bases[2];
+    int i, j, bases[2], expoente, procurado;
     double soma=0;
     for (i=1; str[i]!=' '; i++);
     int aux=i;
@@ -30,7 +30,7 @@ void trataNum (char str[], int a, int TAM_BaseX, char **BaseX) {
         for (; str[i]!=' '; i++);
     }
     for (j=aux; str[j]!='.'; j--);
-    if(bases[0]!= -1){
+    if(bases[0] != -1){
         for (i=j-1; i>=1; i--) {
             if (str[i] > '9') {
                 soma+=(str[i]-'0'-7)*pow(bases[0],j-1-i);
@@ -46,13 +46,15 @@ void trataNum (char str[], int a, int TAM_BaseX, char **BaseX) {
             }
         }
     }else{
-        for(i=j-1; i>=1; i--){
-            if(Procura_Num(TAM_BaseX, BaseX, str[i]) != -1)
-                soma+=(BaseX[i][0])*pow(TAM_BaseX, j-1-i);
+        for(i=j-1, expoente = 0; i>=1; i--){
+            procurado = Procura_Num(TAM_BaseX, BaseX, str[i]);
+            if(procurado != -1)
+                soma+=(procurado)*pow(TAM_BaseX, expoente++);
         }
-        for(i=j+1; i<aux; i++){
-            if(Procura_Num(TAM_BaseX, BaseX, str[i]) != -1)
-                soma+=(BaseX[i][0])*pow(TAM_BaseX, j-i);
+        for(i=j+1, expoente = -1; i<aux; i++){
+            procurado = Procura_Num(TAM_BaseX, BaseX, str[i]);
+            if(procurado != -1)
+                soma+=(procurado)*pow(TAM_BaseX, expoente--);
         }
     }
     if (str[0] == '-') {
@@ -64,7 +66,7 @@ void trataNum (char str[], int a, int TAM_BaseX, char **BaseX) {
 
 void converteNum (FILE *saida, double v[], int TAM_BaseX, char **BaseX) {
     int i, T;
-    char str[192];
+    char str[192], mat[192][10];
     if (v[0]<0) {
         fprintf(saida, "-");
         v[0]*=-1;
@@ -80,19 +82,20 @@ void converteNum (FILE *saida, double v[], int TAM_BaseX, char **BaseX) {
                 str[i]+=7;
             }
         }
-    }else{
-        for(i=0; parte_inteira>=TAM_BaseX; i++, parte_inteira/=(int)TAM_BaseX){
-            str[i]=*(BaseX[(parte_inteira%TAM_BaseX)]);
+        str[i]=parte_inteira+'0';
+        if (str[i] > '9') {
+            str[i]+=7;
         }
+        for (; i>=0; i--) {
+            fprintf(saida, "%c", str[i]);
+        }
+        fprintf(saida, ".");
+    }else{
+        for(i = 0; parte_inteira>=TAM_BaseX; i++, parte_inteira/=(int)TAM_BaseX){
+            sprintf(mat[i], "%s", (BaseX[(parte_inteira%TAM_BaseX)]));
+        }
+        for (; i>=0; i--) fprintf(saida, "%s", mat[i]);
     }
-    str[i]=parte_inteira+'0';
-    if (str[i] > '9') {
-        str[i]+=7;
-    }
-    for (; i>=0; i--) {
-        fprintf(saida, "%c", str[i]);
-    }
-    fprintf(saida, ".");
     if(v[1] != -1){
         for (i=-1; parte_decimal != 0.0; i--) {
             T=parte_decimal*(int)v[1];
@@ -106,7 +109,7 @@ void converteNum (FILE *saida, double v[], int TAM_BaseX, char **BaseX) {
     }else{
         for(i=-1; parte_decimal != 0.0; i--){
             T=parte_decimal*TAM_BaseX;
-            fprintf(saida, "%c", BaseX[T]);
+            fprintf(saida, "%s", BaseX[T]);
             parte_decimal = (parte_decimal*TAM_BaseX) - T;
         }
     }
